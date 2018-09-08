@@ -1,1 +1,4 @@
-alert('hi');
+import * as PIXI from 'pixi.js';
+
+console.log('hi there');
+console.log(PIXI);
