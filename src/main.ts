@@ -1,46 +1,39 @@
 import * as PIXI from 'pixi.js';
-import { createStore } from 'redux';
 
-console.log('hi there');
-console.log(PIXI);
-console.log(createStore);
+const {
+    Application,
+    loader,
+    Sprite
+} = PIXI;
 
-function counter(state = 0, action) {
-    switch (action.type) {
-    case 'INCREMENT':
-      return state + 1
-    case 'DECREMENT':
-      return state - 1
-    default:
-      return state
-    }
-  }
-  ​
-  // Create a Redux store holding the state of your app.
-  // Its API is { subscribe, dispatch, getState }.
-  let store = createStore(counter)
-  ​
-  // You can use subscribe() to update the UI in response to state changes.
-  // Normally you'd use a view binding library (e.g. React Redux) rather than subscribe() directly.
-  // However it can also be handy to persist the current state in the localStorage.
-  ​
-  store.subscribe(() =>
-    console.log(store.getState())
-  )
-  ​
-  // The only way to mutate the internal state is to dispatch an action.
-  // The actions can be serialized, logged or stored and later replayed.
-  store.dispatch({ type: 'INCREMENT' })
-  // 1
-  store.dispatch({ type: 'INCREMENT' })
-  // 2
-  store.dispatch({ type: 'DECREMENT' })
-  // 1
+const app = new Application({
+    // width: 256, height: 256
+    // resolution: 1
+});
+const {
+    renderer,
+    stage
+} = app;
 
-  let type = "WebGL"
-  if(!PIXI.utils.isWebGLSupported()){
-    type = "canvas"
-  }
+PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;    // SUPER IMPORTANT: keeps scaled up sprites from blurring
 
-  PIXI.utils.sayHello(type)
-  
+renderer.view.style.position = "absolute";
+renderer.view.style.display = "block";
+renderer.autoResize = true;
+renderer.resize(window.innerWidth, window.innerHeight);
+
+document.body.appendChild(app.view);
+
+loader.add([
+    "sprites/sword-girl-front.png"
+])
+.load(setup);
+
+function setup() {
+    let sprite = new Sprite.fromImage("sprites/sword-girl-front.png");
+
+    stage.addChild(sprite);
+
+    sprite.scale.set(10, 10);
+    // sprite.position.set(100, 50);
+}
