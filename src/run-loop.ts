@@ -1,41 +1,4 @@
-let fpsCounterDOM = null;
-function updateFPScounter(dtime) {
-    if (!fpsCounterDOM) {
-        fpsCounterDOM = document.createElement('div');
-        fpsCounterDOM.classList.add('fps-counter');
-        fpsCounterDOM.oldfps = 0;
-        document.body.appendChild(fpsCounterDOM);
-    }
-
-    let fps = Math.floor(1000 / dtime * 10) / 10;
-    fpsCounterDOM.oldfps = fps;
-    let fpsStr = `${fps}`;
-    if (fpsStr.length <= 2) {
-        fpsStr = `${fpsStr}.0`;
-    }
-    fpsCounterDOM.innerHTML = fpsStr;
-}
-
-class FpsTracker {
-    frameTimes: number[] = [];
-    totalTime: number = 20 * 100;
-
-    constructor() {
-        for (let i = 0; i < 100; i++) {
-            this.frameTimes.push(20);
-        }
-    }
-
-    push(ftime: number): void {
-        let overflow = this.frameTimes.shift();
-        this.totalTime += ftime - overflow;
-        this.frameTimes.push(ftime);
-    }
-
-    average(): number {
-        return this.totalTime / 100;
-    }
-}
+import FpsTracker from "./fps-tracker";
 
 export default class RunLoop {
     fpsTracker: FpsTracker = new FpsTracker();
@@ -44,7 +7,7 @@ export default class RunLoop {
     boundFrameHandler: (time: number) => void;
     frameCount: number = 0;
 
-    constructor(public callback: Function = (() => null)) {
+    constructor(public callback: (dtime: number) => void) {
         this.boundFrameHandler = this.frameHandler.bind(this);
     }
 
@@ -85,7 +48,7 @@ export default class RunLoop {
         this.fpsTracker.push(dtime);
 
         if (this.frameCount++ > 60) {
-            updateFPScounter(this.fpsTracker.average());
+            this.fpsTracker.updateFPScounter();
             this.frameCount = 0;
         }
     }
