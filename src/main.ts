@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import RunLoop from "./run-loop";
 
 const {
     Application,
@@ -37,3 +38,9 @@ function setup() {
     sprite.scale.set(10, 10);
     // sprite.position.set(100, 50);
 }
+
+const runLoop = new RunLoop(function (deltaT) {
+    console.log("frame", deltaT);
+});
+
+runLoop.start();
