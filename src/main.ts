@@ -1,61 +1,49 @@
 import * as PIXI from 'pixi.js';
 import RunLoop from "./run-loop";
+import { setupCanvas } from './helpers/setup-canvas';
+import { attachFocusListeners } from './helpers/attach-focus-listeners';
+import { SPRITE_PATHS } from './sprite-list';
+import { GameState } from './helpers/game-states';
+import { GameModel, newGameModel } from './game-model';
 
-const {
-    Application,
-    loader,
-    Sprite
-} = PIXI;
+const { Application, Sprite } = PIXI;
 
-const app = new Application({
-    // width: 256, height: 256
-    // resolution: 1
-});
-const {
-    renderer,
-    stage
-} = app;
+const runLoop = new RunLoop(gameStep);
+const app = new Application();
+const { stage, renderer } = app;
 
-PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;    // SUPER IMPORTANT: keeps scaled up sprites from blurring
+const model: GameModel = newGameModel();
 
-renderer.view.style.position = "absolute";
-renderer.view.style.display = "block";
-renderer.autoResize = true;
-renderer.resize(window.innerWidth, window.innerHeight);
+attachFocusListeners(runLoop);
+setupCanvas(app);
 
-document.body.appendChild(app.view);
+PIXI.loader
+    .add(SPRITE_PATHS)
+    .load(() => runLoop.start());
 
-loader.add([
-    "sprites/sword-girl-front.png"
-])
-.load(setup);
+function gameStep(deltaT) {
+    switch (model.state) {
+        case GameState.Loading: loadingStep(deltaT); break;
+        case GameState.MainMenu: mainMenuStep(deltaT); break;
+    }
 
-function setup() {
-    let sprite = new Sprite.fromImage("sprites/sword-girl-front.png");
-
-    stage.addChild(sprite);
-
-    sprite.scale.set(10, 10);
-    // sprite.position.set(100, 50);
+    renderer.flush();
 }
 
-const runLoop = new RunLoop(function (deltaT) {
-    console.log("frame", deltaT);
-});
+function loadingStep(deltaT) {
+    console.log('loading-step');
 
-runLoop.start();
+    let sprite = new Sprite.fromImage("sprites/sword-girl-front.png");
+    stage.addChild(sprite);    
+    sprite.scale.set(10, 10);
 
-document.addEventListener("visibilitychange", function () {
-    if (document.hidden) {
-        runLoop.stop();
-    }
-});
+    model.sprite = sprite;
 
-window.addEventListener("blur", function () {
-    runLoop.stop();
-});
+    model.state = GameState.MainMenu; 
+}
 
-window.addEventListener("focus", function () {
-    // inputs.forEach(input => input.clearState());
-    runLoop.start();
-});
+function mainMenuStep(deltaT) {
+    console.log('main-menu-step');
+
+    model.sprite.x += 1;
+}
